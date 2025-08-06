@@ -1,0 +1,41 @@
+[project]
+name = "flet-controller"
+version = "0.1.0"
+description = "controller for a esp32 robot"
+readme = "README.md"
+requires-python = ">=3.9"
+authors = [
+    { name = "Pedro Morello", email = "pedroadf2010@gmail.com" }
+]
+dependencies = [
+  "flet==0.28.3"
+]
+
+[tool.flet]
+# org name in reverse domain name notation, e.g. "com.mycompany".
+# Combined with project.name to build bundle ID for iOS and Android apps
+org = "AguiasPilchadas"
+
+# project display name that is used as an app title on Android and iOS home screens,
+# shown in window titles and about app dialogs on desktop.
+product = "flet-controller"
+
+# company name to display in about app dialogs
+company = "Flet"
+
+# copyright text to display in about app dialogs
+copyright = "Copyright (C) 2025 by AguiasPilchadas"
+
+[tool.flet.app]
+path = "src"
+
+[tool.uv]
+dev-dependencies = [
+    "flet[all]==0.28.3",
+]
+
+[tool.poetry]
+package-mode = false
+
+[tool.poetry.group.dev.dependencies]
+flet = {extras = ["all"], version = "0.28.3"}
