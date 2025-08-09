@@ -1,16 +1,23 @@
 import flet as ft
 import socket
-import threading as th
 buttons_sizes = 90
 button_bgcolor = ft.CupertinoColors.QUATERNARY_LABEL
 
+def socket_setup(Host, Port):
+    global s
+    try:
+        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        s.connect((Host, Port))
+        print(f"Connected with {Host}:{Port}")
+    except Exception as e:
+        print(f"ERRO SOCKET: {e}")
+        socket_setup("192.168.0.201", 64000)
 def main(page: ft.Page):
-    th1.start()
     page.title = "Controle ESP32"
     page.theme_mode = ft.ThemeMode.DARK
     largura_tela = page.width
     altura_tela = page.height
-    print(altura_tela)
+    print(f"{altura_tela}x{largura_tela}")
 
     def move_right(e):
         socket_send("right")
@@ -20,17 +27,14 @@ def main(page: ft.Page):
         socket_send("left")
     def move_down(e):
         socket_send("backward")
-
     def update_slider(e):
         socket_send("power", round(slider.value))
         print(round(slider.value))
 
     right_arrow = ft.IconButton(ft.Icons.KEYBOARD_ARROW_RIGHT_SHARP, on_click=move_right, style=ft.ButtonStyle(shape=ft.RoundedRectangleBorder(15), bgcolor=button_bgcolor), icon_size=buttons_sizes)
     left_arrow = ft.IconButton(ft.Icons.KEYBOARD_ARROW_LEFT_SHARP, on_click=move_left, style=ft.ButtonStyle(shape=ft.RoundedRectangleBorder(15), bgcolor=button_bgcolor), icon_size=buttons_sizes)
-
     down_arrow = ft.IconButton(ft.Icons.ARROW_DOWNWARD, on_click=move_down, style=ft.ButtonStyle(shape=ft.RoundedRectangleBorder(15), bgcolor=button_bgcolor), icon_size=buttons_sizes)
     up_arrow = ft.IconButton(ft.Icons.ARROW_UPWARD, on_click=move_up, style=ft.ButtonStyle(shape=ft.RoundedRectangleBorder(15), bgcolor=button_bgcolor), icon_size=buttons_sizes)    
-
     slider = ft.Slider(min=0, max=100, on_change=update_slider, label="{value}%", width=largura_tela - 60)
 
     page.add(
@@ -55,34 +59,29 @@ def main(page: ft.Page):
             content=ft.Row([left_arrow, down_arrow, right_arrow], ft.MainAxisAlignment.CENTER),
         )
     )
-
-def socket_setup(Host, Port):
-    global s
-    try:
-        s = socket.socket()
-        s.connect((Host, Port))
-        print(f"Connected with {Host}:{Port}")
-    except Exception as e:
-        print(e)
+    socket_setup("192.168.0.201", 64000)
 
 def socket_send(dir,power=0):
-    match dir:
-        case "forward":
-            s.sendall(dir.encode())
-            print(f"Sended {dir}")
-        case "backward":
-            s.sendall(dir.encode())
-        case "left":
-            s.sendall(dir.encode())
-        case "right":
-            s.sendall(dir.encode())
-        case "power":
-            s.sendall(f"{dir}/{power+100}".encode())
-        case _:
-            print("Invalid direction")
-
-def sockets_func():
-    socket_setup("127.0.0.1", 64000)
-    
-th1=th.Thread(target=sockets_func)
+    try:
+        match dir:
+            case "forward":
+                s.sendall(dir.encode())
+                print(f"Sended {dir}")
+            case "backward":
+                s.sendall(dir.encode())
+                print(f"Sended {dir}")
+            case "left":
+                s.sendall(dir.encode())
+                print(f"Sended {dir}")
+            case "right":
+                s.sendall(dir.encode())
+                print(f"Sended {dir}")
+            case "power":
+                s.sendall(f"p/{power+100}".encode())
+                print(f"Sended {dir}={power+100}")
+            case _: 
+                print("Invalid direction")
+    except Exception as e:
+        print(f"ERRO SOCKET SEND {e}")
+        socket_setup("192.168.0.201", 64000)
 ft.app(target=main)
