@@ -21,7 +21,7 @@ org = "AguiasPilchadas"
 product = "flet-controller"
 
 # company name to display in about app dialogs
-company = "Flet"
+company = "AguiasPilchadas"
 
 # copyright text to display in about app dialogs
 copyright = "Copyright (C) 2025 by AguiasPilchadas"
