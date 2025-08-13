@@ -1,21 +1,21 @@
 import socket
-def socket_setup():
-    global s
-    HOST, PORT = "192.168.0.201", 64000
-    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    s.bind((HOST, PORT))
-    s.listen()
-    print("Waiting")
-    global conn, addr
-    conn, addr = s.accept()
-    print(f"Connected with {addr}")
-def socket_recv():
-    data=conn.recv(1024)
-    data=data.decode()
-    if data:
-        print(data)
-def main():
-    socket_setup()
-    for x in range(0,11):
-        socket_recv()
-main()
+import network
+
+def wifi_conf(ssid="", passwd="", hostname=''):
+    ap = network.WLAN(network.AP_IF)
+    ap.active(True)
+    ap.config(ssid=ssid, password=passwd)
+    network.hostname(hostname)
+    return ap.ifconfig()
+
+def socket_setup(ip, port):
+    s=socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    try:
+        s.bind((str(ip), port))
+        s.listen()
+        conn, addr=s.accept()
+        return conn, addr
+    except Exception as e:
+        print(f"[*] {e}")
+ip=wifi_conf("biloba", "abacaxiba", "Franco Lindao")
+socket_setup(ip, 1000)
