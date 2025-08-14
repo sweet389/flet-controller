@@ -1,23 +1,27 @@
 import flet as ft
 import socket
 import time
-import itertools
 
 buttons_sizes = 90
 button_bgcolor = ft.CupertinoColors.QUATERNARY_LABEL
-
+page=None
 def socket_setup(Host, Port):
     global s
     try:
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         s.connect((Host, Port))
         print(f"Connected with {Host}:{Port}")
+        last_log.value = f"Connected with {Host}:{Port}"
+        page.update()
     except Exception as e:
         print(f"ERRO SOCKET: {e}")
+        last_log.value = e
+        page.update()
         time.sleep(1)
-        socket_setup(Host, Port)
         
-def main(page: ft.Page):
+def main(p: ft.Page):
+    global page
+    page=p
     page.title = "Controle ESP32"
     page.theme_mode = ft.ThemeMode.DARK
     largura_tela = page.width
@@ -26,7 +30,7 @@ def main(page: ft.Page):
         slider_height=altura_tela-770
     else:
         slider_height=30
-    print(f"{altura_tela}x{largura_tela}")
+    print(f"{largura_tela}x{altura_tela}")
 
     def move_right(e):
         socket_send("right")
@@ -40,7 +44,7 @@ def main(page: ft.Page):
         socket_send("power", round(slider.value))
         print(round(slider.value))
     def socket_submit(e):
-        socket_setup(ip_text_box.value, int(port_text_box.value))
+        socket_setup(ip_text_box.value, port_text_box.value)
     
     right_arrow = ft.IconButton(ft.Icons.KEYBOARD_ARROW_RIGHT_SHARP, on_click=move_right, style=ft.ButtonStyle(shape=ft.RoundedRectangleBorder(15), bgcolor=button_bgcolor), icon_size=buttons_sizes)
     left_arrow = ft.IconButton(ft.Icons.KEYBOARD_ARROW_LEFT_SHARP, on_click=move_left, style=ft.ButtonStyle(shape=ft.RoundedRectangleBorder(15), bgcolor=button_bgcolor), icon_size=buttons_sizes)
@@ -52,6 +56,9 @@ def main(page: ft.Page):
     port_text_box=ft.TextField(label="Port:", multiline=False, filled=True, border=ft.InputBorder.OUTLINE, border_radius=12, border_width=0.5, bgcolor=ft.CupertinoColors.TERTIARY_LABEL)
     submit_button=ft.FilledButton(text="Submit", bgcolor=ft.CupertinoColors.TERTIARY_LABEL, color=ft.CupertinoColors.WHITE, width=100, on_click=socket_submit)
     
+    global last_log
+    last_log=ft.Text(value="", size=16)
+
     page.add(
         ft.Container(
             content=ft.Row([slider], alignment=ft.MainAxisAlignment.CENTER),
@@ -71,10 +78,29 @@ def main(page: ft.Page):
                         ),
                         ft.Column(
                             [
-                                ft.Text(value="AAAAA"),                                
-                                ft.Icon(name=ft.Icons.SIGNAL_WIFI_STATUSBAR_CONNECTED_NO_INTERNET_4),
+                                ft.Text(value=f"STATUS{" "*16}", text_align=ft.TextAlign.START, size=25),                                
+                                ft.Container(
+                                    width=300,     
+                                    expand=True,    
+                                    bgcolor=ft.CupertinoColors.TERTIARY_LABEL,
+                                    border=ft.border.all(1, ft.Colors.BLACK),
+                                    border_radius=8,
+                                    padding=10,
+                                    content=ft.Column([
+                                        ft.Row([ft.Text(f"Connection:", size=16), ft.Icon(name=ft.Icons.WIFI,)]),
+                                        ft.Row([ft.Text(f"IP:", size=16), ft.Icon(name=ft.Icons.WIFI)]),
+                                        ft.Row([ft.Text(f"Port:", size=16), ft.Icon(name=ft.Icons.WIFI)]),
+                                        ft.Row([ft.Text(f"Power:", size=16), ft.Icon(name=ft.Icons.WIFI)]),
+                                        ft.Row([ft.Text(value="Last Log:", size=16),last_log]),
+                                    ],  
+                                    alignment=ft.MainAxisAlignment.START,
+                                    scroll=ft.ScrollMode.AUTO
+                                    ),
+                                    
+                                ), 
                             ],
-                        horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+                        horizontal_alignment=ft.CrossAxisAlignment.END,
+                        alignment=ft.MainAxisAlignment.START,
                         expand=True,
                         )
                 ],
@@ -104,23 +130,35 @@ def socket_send(dir,power=0):
             case "forward":
                 s.sendall(dir.encode())
                 print(f"Sended {dir}")
+                last_log.value = dir
+                page.update()
             case "backward":
                 s.sendall(dir.encode())
                 print(f"Sended {dir}")
+                last_log.value = dir
+                page.update()
             case "left":
                 s.sendall(dir.encode())
                 print(f"Sended {dir}")
+                last_log.value = dir
+                page.update()
             case "right":
                 s.sendall(dir.encode())
                 print(f"Sended {dir}")
+                last_log.value = dir
+                page.update()
             case "power":
                 s.sendall(f"p/{power+100}".encode())
                 print(f"Sended {dir}={power+100}")
+                last_log.value = f"{dir}={power+100}"
+                page.update()
             case _: 
                 print("Invalid direction")
     except Exception as e:
         print(f"ERRO SOCKET SEND {e}")
+        last_log.value = e
+        page.update()
         time.sleep(1)
-        socket_setup("192.168.0.201", 64000)
         
+
 ft.app(target=main)
