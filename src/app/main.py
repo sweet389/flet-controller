@@ -159,6 +159,6 @@ def socket_send(dir,power=0):
         last_log.value = e
         page.update()
         time.sleep(1)
-        
+            
 
 ft.app(target=main)
